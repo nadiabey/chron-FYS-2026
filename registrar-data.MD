@@ -1,4 +1,4 @@
-This year, we attempted to use ethnicity data from the University Registrar to show the diversity of ethnic backgrounds at Duke. The registrar publishes this data in a dashboard [here.] (https://public.tableau.com/app/profile/office.of.the.university.registrar.duke.university/viz/EthnicityTrendsatDuke2012onward/EthnicGroupMakeup)
+This year, we attempted to use ethnicity data from the University Registrar to show the diversity of ethnic backgrounds at Duke. The registrar publishes this data in a dashboard [here.](https://public.tableau.com/app/profile/office.of.the.university.registrar.duke.university/viz/EthnicityTrendsatDuke2012onward/EthnicGroupMakeup)
 The underlying dataset includes data from 2012 to 2023. We used the "Ethnic Group Makeup" data. The initial view can be filtered by Ethnic Group to show breakdowns within Ethnic Groups.
 We exported the Tableau workbook from the dashboard and extracted the source data. This data included numbers of how many people selected a given race or ethnicity by academic year.
 Further examination of the data showed that the percentages shown in the Tableau dashboard are out of ALL responses from 2012 to 2023. 
