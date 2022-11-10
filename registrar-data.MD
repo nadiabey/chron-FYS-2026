@@ -1,0 +1,6 @@
+This year, we attempted to use ethnicity data from the University Registrar to show the diversity of ethnic backgrounds at Duke. The registrar publishes this data in a dashboard here: https://public.tableau.com/app/profile/office.of.the.university.registrar.duke.university/viz/EthnicityTrendsatDuke2012onward/EthnicGroupMakeup
+The underlying dataset includes data from 2012 to 2023. We used the "Ethnic Group Makeup" data. The initial view can be filtered by Ethnic Group to show breakdowns within Ethnic Groups.
+We exported the Tableau workbook from the dashboard and extracted the source data. This data included numbers of how many people selected a given race or ethnicity by academic year.
+Further examination of the data showed that the percentages shown in the Tableau dashboard are out of ALL responses from 2012 to 2023. 
+For example, there were 109,054 responses for the ethnic group "White" from 2012 to 2023. From 2012 to 2023, there were 93 responses for "Seljuk Turk." When the dashboard is filtered to "White," it says that 0.09% of students identify as "Seljuk Turk." Dividing 93 by 109,054 gives 0.085%, which rounds up to 0.09%.
+With this knowledge, we filtered the data to only include responses from the 2023 academic year. This is how we identified the ethnicity breakdown for this year.
