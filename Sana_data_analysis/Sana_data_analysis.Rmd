@@ -1,0 +1,204 @@
+---
+title: "Sana_data_analysis"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+library(tidyverse)
+library(dplyr)
+library(ggplot2)
+library(tidyr)
+```
+
+
+```{r reading-in-data}
+firstyeardata <- read.csv("final_survey_data.csv", na.strings=c("", "-99"), as.is=TRUE)
+firstyeardata <- firstyeardata[-1,]
+```
+
+
+## Investigating income and test optional policy trends
+
+
+```{r income-test-submission}
+##What percentage of first years in each income category submitted their ACT, SAT, Neither or Both? 
+
+income_testoptional <- firstyeardata %>%
+  select("Q16", "Q76") %>%
+  na.omit() %>%
+  group_by(Q16) %>%
+  summarize(ACT = ((sum(Q76 == "ACT")/sum(unique(length(Q16)))) * 100),
+            SAT = ((sum(Q76 == "SAT")/sum(unique(length(Q16)))) * 100),
+            Neither = ((sum(Q76 == "Neither")/sum(unique(length(Q16)))) * 100), 
+            Both = ((sum(Q76 == "Both")/sum(unique(length(Q16)))) * 100))
+
+head(income_testoptional)
+```
+
+
+```{r income-test-submission-graph-df}
+incomecategory <- firstyeardata %>%
+  select("Q16") %>%
+  na.omit() %>%
+  group_by(Q16) %>%
+  summarize(count = sum(unique(length(Q16))))
+
+income_testoptionalg <- firstyeardata %>%
+  select("Q16", "Q76") %>%
+  na.omit() %>%
+  group_by(Q16, Q76) %>%
+  summarize(count = sum(unique(length(Q76))))
+
+income_testoptionalg <- left_join(income_testoptionalg, incomecategory, by = "Q16")
+
+income_testoptionalg <- income_testoptionalg %>%
+  mutate("percent" = (count.x/count.y) * 100)
+
+```
+
+```{r income-test-submission-graph}
+ggplot(income_testoptionalg, aes(fill=Q76, y=percent, x=Q16)) + 
+    geom_bar(position="dodge", stat="identity")
+##needs work
+##will probably do in tableau, just for idea purposes
+
+```
+
+
+
+```{r income-test-submission-policy}
+##How did the test-optional policy affect a first year's decision to apply by income? i.e. showing the percentage of first years in each income category which demonstrated different levels of influence of test optional policy on decision to apply
+
+income_testoptionalpolicy <- firstyeardata %>%
+  select("Q16", "Q90") %>%
+  na.omit() %>%
+  group_by(Q16) %>%
+  summarise(
+    no_influence = ((sum(Q90 == "The policy had no influence on my decision")/sum(unique(length(Q16)))) * 100),
+    some_influence = ((sum(Q90 == "The policy somewhat influenced my decision")/sum(unique(length(Q16)))) * 100), 
+    significant_influence = ((sum(Q90 == "The policy influenced my decision significantly")/sum(unique(length(Q16)))) * 100))
+
+head(income_testoptionalpolicy)
+
+```
+
+```{r income-test-policy-graphdf}
+income_testoptionalpolicyg <- firstyeardata %>%
+  select("Q16", "Q90") %>%
+  na.omit() %>%
+  group_by(Q16, Q90) %>%
+  summarize(count = sum(unique(length(Q90))))
+
+income_testoptionalpolicyg <- left_join(income_testoptionalpolicyg, incomecategory, by = "Q16")
+
+income_testoptionalpolicyg <- income_testoptionalpolicyg %>%
+  mutate("percent" = (count.x/count.y) * 100)
+  
+```
+
+
+```{r income-test-policy-graph}
+ggplot(income_testoptionalpolicyg, aes(fill=Q90, y=percent, x=Q16)) + 
+    geom_bar(position="dodge", stat="identity")
+
+##needs work
+##will probably do in tableau, just for idea purposes
+
+```
+
+```{r}
+income_test_data <- left_join(income_testoptional, income_testoptionalpolicy, id = "Q16")
+
+write.csv(income_test_data, "income_test_data.csv")
+```
+
+
+
+##Investigating Community Backgrounds and Income 
+
+```{r income-community-df}
+##What percentage of students in each income category are from rural, suburban, or urban backgrounds?
+
+income_community <- firstyeardata %>%
+  select("Q16", "Q15") %>%
+  na.omit() %>%
+  group_by(Q16) %>%
+  summarize(rural = ((sum(Q15 == "Rural")/sum(unique(length(Q16)))) * 100),
+            suburban = ((sum(Q15 == "Suburban")/sum(unique(length(Q16)))) * 100),
+            urban = ((sum(Q15 == "Urban")/sum(unique(length(Q16)))) * 100))
+
+head(income_community)
+
+```
+
+
+
+```{r income-community-graph-df}
+income_communityg <- firstyeardata %>%
+  select("Q16", "Q15") %>%
+  na.omit() %>%
+  group_by(Q16, Q15) %>%
+  summarize(count = sum(unique(length(Q15))))
+
+income_communityg <- left_join(income_communityg, incomecategory, by = "Q16")
+
+income_communityg <- income_communityg %>%
+  mutate("percent" = (count.x/count.y) * 100)
+```
+
+
+```{r income-community-graph}
+ggplot(income_communityg, aes(fill=Q15, y=percent, x=Q16)) + 
+    geom_bar(position="dodge", stat="identity")
+
+##needs work, will do in tableau
+```
+
+##First Gen and Income 
+
+```{r}
+##What percentage of students in each income category are first generation?
+
+firstgen_income <- firstyeardata %>%
+  select("Q16", "Q9") %>%
+  na.omit() %>%
+  group_by(Q16) %>%
+  summarize(first_gen = ((sum(Q9 == "Yes")/sum(unique(length(Q16)))) * 100))
+
+head(firstgen_income)
+
+```
+
+```{r}
+
+firstgen_incomeg <- firstyeardata %>%
+  select("Q16", "Q9") %>%
+  na.omit() %>%
+  group_by(Q16, Q9) %>%
+  summarize(count = sum(unique(length(Q9))))
+
+firstgen_incomeg <- left_join(firstgen_incomeg, incomecategory, by = "Q16")
+
+firstgen_incomeg <- firstgen_incomeg %>%
+  mutate("percent" = (count.x/count.y) * 100)
+
+head(firstgen_incomeg)
+```
+
+
+```{r}
+ggplot(firstgen_incomeg, aes(fill=Q9, y=percent, x=Q16)) + 
+    geom_bar(position="fill", stat="identity")
+```
+
+
+
+
+
+
+
+
+
+
+
+
