@@ -1,0 +1,250 @@
+---
+title: "Sana_data_analysis"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+library(tidyverse)
+library(dplyr)
+library(ggplot2)
+library(tidyr)
+```
+
+
+```{r reading-in-data}
+firstyeardata <- read.csv("final_survey_data.csv", na.strings=c("", "-99"), as.is=TRUE)
+firstyeardata <- firstyeardata[-1,]
+```
+
+
+## Investigating income and test optional policy trends
+
+
+```{r income-test-submission}
+##What percentage of first years in each income category submitted their ACT, SAT, Neither or Both? 
+
+firstyeardata$Q16 <- factor(firstyeardata$Q16, 
+                  levels = c("Below $40,000", '$40,000-$80,000', "$80,000-$125,000",'$125,000-$250,000','$250,000-$500,000'))
+
+incomecategory <- firstyeardata %>%
+  select("Q16") %>%
+  na.omit() %>%
+  group_by(Q16) %>%
+  summarize(count = sum(unique(length(Q16))))
+
+income_testsubmission <- firstyeardata %>%
+  select("Q16", "Q76") %>%
+  na.omit() %>%
+  group_by(Q16, Q76) %>%
+  summarize(count = sum(unique(length(Q76))))
+
+income_testsubmission <- left_join(income_testsubmission, incomecategory, by = "Q16")
+
+income_testsubmission <- income_testsubmission %>%
+  mutate("percent" = (count.x/count.y) * 100) %>%
+  select("Q16", "Q76", "percent") %>%
+  rename("Income" = "Q16","Test_submission" = "Q76")
+
+head(income_testsubmission)
+
+
+```
+
+
+
+
+```{r income-test-submission-graph}
+ggplot(income_testsubmission, aes(fill=Test_submission, y=percent, x=Income)) + 
+    geom_bar(position="dodge", stat="identity") +
+  labs(title = "What proportion of first years in each income category\nsubmitted their ACT, SAT, neither or both? ", 
+       y = "Proportion", x = "\nIncome category", fill = "") +
+  scale_x_discrete(labels = c("Below \n$40,000", '$40,000-\n$80,000', "$80,000-\n$125,000", '$125,000 -\n250,000', '$250,000-\n$500,000')) 
+
+```
+
+
+
+```{r income-test-optional-policy}
+##How did the test-optional policy affect a first year's decision to apply by income? i.e. showing the percentage of first years in each income category which demonstrated different levels of influence of test optional policy on decision to apply
+income_testoptionalpolicy <- firstyeardata %>%
+  select("Q16", "Q90") %>%
+  na.omit() %>%
+  group_by(Q16, Q90) %>%
+  summarize(count = sum(unique(length(Q90))))
+
+income_testoptionalpolicy <- left_join(income_testoptionalpolicy, incomecategory, by = "Q16")
+
+income_testoptionalpolicy <- income_testoptionalpolicy %>%
+  mutate("percent" = (count.x/count.y) * 100) %>%
+  select("Q16", "Q90", "percent") %>%
+  rename("Income" = "Q16", "Influence_level" = "Q90")
+
+
+head(income_testoptionalpolicy)
+
+
+```
+
+
+```{r income-test-policy-graph}
+ggplot(income_testoptionalpolicy, 
+       aes(fill=Influence_level, y=percent, x=Income)) + 
+    geom_bar(position="dodge", stat="identity") +
+  labs(title = "How did the test-optional policy affect a\nfirst year's decision to apply by income?", 
+       y = "Proportion", x = "\nIncome category", fill = "") +
+  scale_x_discrete(labels = c("Below \n$40,000", '$40,000-\n$80,000', "$80,000-\n$125,000", '$125,000 -\n250,000', '$250,000-\n$500,000')) + 
+  scale_fill_discrete(labels = c("No influence", "Significant influence", "Some influence"))
+
+```
+
+
+
+
+
+##Investigating Community Backgrounds and Income 
+
+```{r income-community-df}
+##What percentage of students in each income category are from rural, suburban, or urban backgrounds?
+income_community <- firstyeardata %>%
+  select("Q16", "Q15") %>%
+  na.omit() %>%
+  group_by(Q16, Q15) %>%
+  summarize(count = sum(unique(length(Q15))))
+
+income_community <- left_join(income_community, incomecategory, by = "Q16")
+
+income_community <- income_community %>%
+  mutate("percent" = (count.x/count.y) * 100) %>%
+  select("Q16", "Q15", "percent") %>%
+  rename("Income" = "Q16", "Community_type" = "Q15")
+
+head(income_community)
+
+```
+
+
+```{r income-community-graph}
+ggplot(income_community, aes(fill=Community_type, y=percent, x=Income)) + 
+    geom_bar(position="dodge", stat="identity") +
+  labs(title = "What proportion of students in each income\ncategory are from rural, suburban, or urban backgrounds?", 
+       y = "Proportion", x = "\nIncome category", fill = "Community type") +
+  scale_x_discrete(labels = c("Below \n$40,000", '$40,000-\n$80,000', "$80,000-\n$125,000", '$125,000 -\n250,000', '$250,000-\n$500,000')) + 
+  theme_minimal()
+
+
+```
+
+##First Gen and Income 
+
+
+```{r income-firstgen-df}
+##What percentage of students in each income category are first generation?
+
+firstgen_income <- firstyeardata %>%
+  select("Q16", "Q9") %>%
+  na.omit() %>%
+  group_by(Q16, Q9) %>%
+  summarize(count = sum(unique(length(Q9))))
+
+firstgen_income <- left_join(firstgen_income, incomecategory, by = "Q16")
+
+firstgen_income <- firstgen_income %>%
+  mutate("percent" = (count.x/count.y) * 100) %>%
+  select("Q16", "Q9", "percent") %>%
+  rename("First_Gen" = "Q9") %>%
+  rename("Income" = "Q16")
+
+
+head(firstgen_income)
+
+
+```
+
+
+```{r income-firstgen-graph}
+
+ggplot(firstgen_income, aes(fill=First_Gen, x= Income, y=percent)) + 
+    geom_bar(position="fill", stat="identity") +
+  labs(title = "Proportion of first generation students in each\nincome category", 
+       y = "Proportion", x = "\nIncome category", fill = "") +
+  scale_x_discrete(labels = c("Below \n$40,000", '$40,000-\n$80,000', "$80,000-\n$125,000", '$125,000 -\n250,000', '$250,000-\n$500,000')) +
+  scale_fill_discrete(labels = c("Non-first year", "Prefer not to say", "First-year"))
+  
+```
+
+
+##Connectedness between East and West (QuadX)
+
+```{r east-west-closeness-df}
+##How closely do you feel with your West Campus linked Quad?
+east_west_closeness <- firstyeardata %>%
+  select("Q41") %>%
+  na.omit() %>%
+  group_by(Q41) %>%
+  summarise(count = unique(length(Q41))) %>%
+  rename("closeness_level" = "Q41")
+
+head(east_west_closeness)
+```
+```{r east-west-closeness-graph}
+ggplot(east_west_closeness, aes(x = closeness_level, y = count)) +
+  geom_bar(stat="identity", fill = "cornflowerblue") + 
+  labs(title = "How close do first years feel with their West Campus linked Quad?", x = "", y = "Count") + 
+  theme_minimal()
+
+##can annotate with exact counts
+  
+
+```
+
+
+```{r east-campus-community-df}
+##How strong do you feel your East Campus community is?
+east_campus_community <-firstyeardata %>%
+  select("Q42") %>%
+  na.omit() %>%
+  group_by(Q42) %>%
+  summarise(count = unique(length(Q42))) %>%
+  rename("community_sense" = "Q42")
+head(east_campus_community)
+
+```
+
+```{r east-campus-community-graph}
+ggplot(east_campus_community, aes(x = count, y = community_sense)) +
+  geom_bar(stat="identity", fill = "chocolate2") + 
+  labs(title = "How strong do first-years feel their
+       East Campus community is?", 
+       x = "Count", y = "") + 
+  theme_minimal()
+
+##can annotate with exact counts
+```
+
+
+
+
+```{r east-west-activities-df}
+##Have you attended activities hosted by your East Campus dorm or West Campus linked Quad?
+
+east_west_activities <-firstyeardata %>%
+  select("Q43") %>%
+  na.omit() %>%
+  group_by(Q43) %>%
+  summarise(count = unique(length(Q43))) %>%
+  rename("activities_attended" = "Q43")
+
+head(east_west_activities)
+
+```
+```{r east-west-activities-graph}
+ggplot(east_west_activities, aes(y = count, x = activities_attended)) +
+  geom_bar(stat="identity", fill = "darkcyan") + 
+  labs(title = "Have first-years attended activities hosted by your\nEast Campus dorm or West Campus linked Quad?", 
+       x = "", y = "Count") + 
+  theme_minimal()
+
+```
+
+
+
